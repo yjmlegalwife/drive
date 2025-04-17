@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goora Racing Quiz</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="description" content="Goora: A cute sci-fi racing quiz game with phone tilt controls." />
+    <style>
+      #loaderScreen {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: linear-gradient(to bottom right, #1a202c, #2d3748);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        font-family: sans-serif;
+      }
+      .fade-out {
+        animation: fadeOut 1s forwards;
+      }
+      @keyframes fadeOut {
+        to { opacity: 0; visibility: hidden; }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-900 text-white">
+    <!-- Loader / Welcome Screen -->
+    <div id="loaderScreen">
+      <h1 class="text-3xl font-bold mb-6">🚗 Welcome to Goora!</h1>
+      <p class="mb-4">Choose your difficulty to begin:</p>
+      <div class="flex gap-4 mb-6">
+        <button class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded" onclick="startGame('easy')">Easy</button>
+        <button class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded" onclick="startGame('normal')">Normal</button>
+        <button class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded" onclick="startGame('hard')">Hard</button>
+      </div>
+      <p class="text-sm text-gray-400 mt-8">Made by maryxkarina</p>
+    </div>
+
+    <!-- Game Mount Root -->
+    <div id="root" class="h-screen w-screen"></div>
+
+    <!-- Audio preload -->
+    <audio id="bgm" src="/bgm.mp3" preload="auto" loop></audio>
+
+    <!-- React Entry Point -->
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Loader control script -->
+    <script>
+      function startGame(difficulty) {
+        localStorage.setItem('gooraDifficulty', difficulty);
+        document.getElementById('loaderScreen').classList.add('fade-out');
+      }
+    </script>
+  </body>
+</html>
