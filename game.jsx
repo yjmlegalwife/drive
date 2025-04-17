@@ -7,17 +7,27 @@ import { Howl } from 'howler';
 
 // Load car model
 function Car({ position }) {
-  const { scene } = useGLTF('/mclaren_mp46.glb');
-  scene.scale.set(0.9, 0.9, 0.9);
-  scene.position.copy(position);
-  return <primitive object={scene} />;
-}
-
-// Load environment
-function Environment() {
-  const { scene } = useGLTF('/cartoon_race_track_-_oval.glb');
-  return <primitive object={scene} />;
-}
+    try {
+      const { scene } = useGLTF('/mclaren_mp46.glb');
+      scene.scale.set(0.9, 0.9, 0.9);
+      scene.position.copy(position);
+      return <primitive object={scene} />;
+    } catch (error) {
+      console.error('Failed to load car model:', error);
+      return null;
+    }
+  }
+  
+  function Environment() {
+    try {
+      const { scene } = useGLTF('/isometric_race_track_-_daily_render_-_27.glb');
+      return <primitive object={scene} />;
+    } catch (error) {
+      console.error('Failed to load environment:', error);
+      return null;
+    }
+  }
+  
 
 // Main Game Logic
 function Game() {
@@ -26,13 +36,7 @@ function Game() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timer, setTimer] = useState(8);
   const [gameOver, setGameOver] = useState(false);
-
-  const difficulty = localStorage.getItem('gooraDifficulty') || 'normal';
-  const difficultyTime = {
-    easy: 10,
-    normal: 8,
-    hard: 5,
-  };
+  const [difficulty, setDifficulty] = useState(null);
 
   const questions = [
     { q: 'What does AI stand for?', options: ['Artificial Intelligence', 'Automated Input'], answer: 0 },
@@ -70,7 +74,7 @@ function Game() {
 
   // Question timer
   useEffect(() => {
-    if (gameOver) return;
+    if (gameOver || !difficulty) return;
     const timerInterval = setInterval(() => {
       setTimer(prev => {
         if (prev === 1) {
@@ -81,7 +85,7 @@ function Game() {
       });
     }, 1000);
     return () => clearInterval(timerInterval);
-  }, [gameOver]);
+  }, [gameOver, difficulty]);
 
   function handleAnswer(index) {
     if (gameOver) return;
@@ -89,11 +93,18 @@ function Game() {
     if (correct) {
       correctSound.play();
       setQuestionIndex(prev => (prev + 1) % questions.length);
-      setTimer(difficultyTime[difficulty]);
+      setTimer(difficulty);
     } else {
       wrongSound.play();
       setGameOver(true);
     }
+  }
+
+  function startGame(diff) {
+    setDifficulty(diff);
+    setGameOver(false);
+    setQuestionIndex(0);
+    setTimer(diff);
   }
 
   return (
@@ -109,9 +120,18 @@ function Game() {
         </Suspense>
       </Canvas>
 
-      <Html>
-        <div className="absolute top-5 left-5 bg-white p-4 rounded-lg shadow-xl w-96 z-50 text-center">
-          {!gameOver ? (
+      <Html fullscreen>
+  <div className="flex items-center justify-center h-screen w-screen bg-black/50 text-white z-50">
+          {!difficulty ? (
+            <>
+              <h1 className="text-2xl font-bold mb-4">Welcome to Goora</h1>
+              <p className="mb-4">Choose Difficulty:</p>
+              <button onClick={() => startGame(8)} className="w-full bg-green-400 hover:bg-green-500 text-white py-2 px-4 rounded mb-2">Easy</button>
+              <button onClick={() => startGame(5)} className="w-full bg-yellow-400 hover:bg-yellow-500 text-white py-2 px-4 rounded mb-2">Normal</button>
+              <button onClick={() => startGame(3)} className="w-full bg-red-400 hover:bg-red-500 text-white py-2 px-4 rounded mb-2">Hard</button>
+              <p className="mt-4 text-xs text-gray-500">Made by maryxkarina</p>
+            </>
+          ) : !gameOver ? (
             <>
               <h1 className="text-xl font-semibold mb-4">{questions[questionIndex].q}</h1>
               {questions[questionIndex].options.map((opt, i) => (
@@ -130,11 +150,7 @@ function Game() {
               <h1 className="text-3xl font-bold text-red-600 mb-4">Game Over!</h1>
               <p className="mb-4">Try Again?</p>
               <button
-                onClick={() => {
-                  setGameOver(false);
-                  setQuestionIndex(0);
-                  setTimer(difficultyTime[difficulty]);
-                }}
+                onClick={() => startGame(difficulty)}
                 className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition-all duration-200"
               >
                 Restart
